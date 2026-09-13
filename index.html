@@ -43,7 +43,6 @@
       border-radius: 14px;
       box-shadow: 0 6px 20px rgba(0,0,0,0.18);
     }
-    /* 5x5 格子放大，每格 56px，手指超好按 */
     #board {
       display: grid;
       grid-template-columns: repeat(5, 56px);
@@ -61,17 +60,19 @@
       border-radius: 6px;
       background: #fff;
       transition: transform 0.05s;
+      overflow: hidden; /* 防止圖片撐爆格子 */
+      position: relative;
     }
     .cell:active {
       transform: scale(0.92);
     }
 
-    /* 5 種柔和清新森林色塊 (zone-0 ~ zone-4) */
-    .zone-0 { background-color: #ffd8a8; } /* 0: 暖橘色 (左上角單獨 1 格起點) */
-    .zone-1 { background-color: #c3fae8; } /* 1: 薄荷綠 */
-    .zone-2 { background-color: #ffc9c9; } /* 2: 櫻花粉 */
-    .zone-3 { background-color: #e5dbff; } /* 3: 薰衣紫 */
-    .zone-4 { background-color: #fff3bf; } /* 4: 奶黃色 */
+    /* 5 種柔和色塊 */
+    .zone-0 { background-color: #ffd8a8; }
+    .zone-1 { background-color: #c3fae8; }
+    .zone-2 { background-color: #ffc9c9; }
+    .zone-3 { background-color: #e5dbff; }
+    .zone-4 { background-color: #fff3bf; }
 
     .cross {
       color: #7b8f7e;
@@ -79,10 +80,15 @@
       font-weight: bold;
       line-height: 1;
     }
+    
+    /* 鹿鹿圖片樣式：完美置中並適應格子大小 */
     .deer-img {
       width: 44px;
       height: 44px;
+      max-width: 44px;
+      max-height: 44px;
       object-fit: contain;
+      display: block;
       pointer-events: none;
     }
 
@@ -140,10 +146,9 @@
 
   <script>
     const N = 5;
-    const deer_IMAGE_URL = "deer.png";
+    // 使用目前目錄下的 deer.png
+    const DEER_IMAGE_URL = "deer.png";
 
-    // 5x5 嚴格驗證唯一解色塊地圖 (0~4 五種顏色)
-    // [0][0] 是唯一的 0 (暖橘色)
     const colorMap = [
       [0, 1, 1, 1, 2],
       [1, 1, 1, 2, 2],
@@ -153,7 +158,7 @@
     ];
 
     let boardState = Array.from({ length: N }, () => Array(N).fill(0));
-    let currentMode = 2; // 預設放鹿模式
+    let currentMode = 2;
 
     const boardEl = document.getElementById("board");
     const counterEl = document.getElementById("counter");
@@ -175,7 +180,9 @@
             img.src = DEER_IMAGE_URL;
             img.className = "deer-img";
             img.alt = "鹿鹿";
-            img.onerror = () => { img.outerHTML = "🦌"; };
+            img.onerror = function() {
+              this.outerHTML = "🦌"; // 若圖檔讀取異常時退回 emoji 保底
+            };
             cell.appendChild(img);
             deerCount++;
           }
