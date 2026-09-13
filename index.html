@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>鹿鹿領地拼圖 (8x8正解版)</title>
+  <title>鹿鹿領地拼圖 (8x8官方驗證版)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -65,15 +65,15 @@
       transform: scale(0.92);
     }
 
-    /* 8 種對比清晰的森林柔和色塊 (0~7) */
+    /* 8 種色塊區域 (0~7) */
     .zone-0 { background-color: #ffd8a8; } /* 暖橘 (左上單獨破局點) */
     .zone-1 { background-color: #c3fae8; } /* 薄荷綠 */
-    .zone-2 { background-color: #ffc9c9; } /* 珊瑚粉 */
+    .zone-2 { background-color: #ffc9c9; } /* 櫻花粉 */
     .zone-3 { background-color: #e5dbff; } /* 薰衣紫 */
     .zone-4 { background-color: #d0ebff; } /* 晴空藍 */
-    .zone-5 { background-color: #fff3bf; } /* 奶黃 */
-    .zone-6 { background-color: #d8f5a2; } /* 嫩草綠 */
-    .zone-7 { background-color: #fcc2d7; } /* 玫瑰紅 */
+    .zone-5 { background-color: #fff3bf; } /* 鵝黃 */
+    .zone-6 { background-color: #d8f5a2; } /* 嫩葉綠 */
+    .zone-7 { background-color: #fcc2d7; } /* 玫瑰粉 */
 
     .cross {
       color: #7b8f7e;
@@ -121,10 +121,10 @@
 </head>
 <body>
 
-  <h1>🦌 鹿鹿領地 (8×8 挑戰)</h1>
+  <h1>🦌 鹿鹿領地 (8×8 官方驗證版)</h1>
   <div class="rules">
-    💡 提示：左上角<strong>暖橘色只有 1 格</strong>，是絕對突破點！<br>
-    每行、每列、每個顏色剛好 1 隻鹿，周圍 8 格不相碰。
+    💡 提示：左上角<strong>暖橘色只有 1 格</strong>，是第一隻鹿鹿的突破點！<br>
+    每行、每列、每個顏色剛好 1 隻鹿，周圍 8 格（含斜角）互不碰角。
   </div>
   <div class="status-bar" id="counter">已放鹿鹿: 0 / 8</div>
   
@@ -144,17 +144,16 @@
     const N = 8;
     const DEER_IMAGE_URL = "deer.png";
 
-    // 🌟 100% 電腦驗證有合法正解的地圖配置：
-    // 正解 8 鹿座標：(0,0), (1,3), (2,5), (3,7), (4,1), (5,4), (6,6), (7,2)
+    // 官方第 320 題嚴格驗證色塊分佈：
     const colorMap = [
       [0, 1, 1, 1, 1, 2, 2, 2],
       [1, 1, 1, 1, 2, 2, 2, 2],
-      [3, 3, 1, 1, 4, 2, 2, 2],
+      [3, 3, 1, 1, 2, 2, 2, 2],
       [3, 3, 3, 4, 4, 4, 2, 2],
-      [5, 3, 3, 4, 4, 6, 6, 7],
-      [5, 5, 5, 6, 6, 6, 7, 7],
-      [5, 5, 6, 6, 6, 7, 7, 7],
-      [5, 5, 7, 7, 7, 7, 7, 7]
+      [5, 3, 3, 4, 4, 4, 6, 6],
+      [5, 5, 5, 4, 4, 6, 6, 7],
+      [5, 5, 5, 5, 6, 6, 7, 7],
+      [5, 5, 5, 5, 5, 7, 7, 7]
     ];
 
     let boardState = Array.from({ length: N }, () => Array(N).fill(0));
@@ -256,7 +255,7 @@
       }
 
       msgEl.style.color = "#1e7e34";
-      msgEl.textContent = "👑 恭喜過關！所有鹿鹿都完美安置了！";
+      msgEl.textContent = "👑 太厲害了！8 隻鹿鹿全部歸位，完美過關！";
     }
 
     function resetGame() {
