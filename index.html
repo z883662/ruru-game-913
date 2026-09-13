@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>鹿鹿領地拼圖 (8x8挑戰版)</title>
+  <style>
+    * { box-sizing: border-box; touch-action: manipulation; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      background: #f2f5ed; color: #2e4a32; margin: 0; padding: 12px;
+      user-select: none; -webkit-user-select: none;
+    }
+    h1 { margin: 8px 0 4px; font-size: 1.5rem; }
+    .rules { font-size: 0.85rem; color: #557059; margin-bottom: 8px; text-align: center; line-height: 1.3; }
+    .status-bar { margin-bottom: 10px; font-size: 1.1rem; font-weight: bold; }
+    #board-container {
+      background: #334d36; padding: 6px; border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    }
+    #board {
+      display: grid; grid-template-columns: repeat(8, 40px);
+      grid-template-rows: repeat(8, 40px); gap: 2px;
+    }
+    .cell {
+      width: 40px; height: 40px; display: flex; align-items: center;
+      justify-content: center; font-size: 22px; cursor: pointer;
+      border-radius: 4px; background: #fff; transition: transform 0.05s;
+    }
+    .cell:active { transform: scale(0.92); }
+    .zone-0 { background-color: #ffd8a8; }
+    .zone-1 { background-color: #c3fae8; }
+    .zone-2 { background-color: #ffdeeb; }
+    .zone-3 { background-color: #e5dbff; }
+    .zone-4 { background-color: #d0ebff; }
+    .zone-5 { background-color: #fcc2d7; }
+    .zone-6 { background-color: #e9fac8; }
+    .zone-7 { background-color: #ffe066; }
+    .cross { color: #7b8f7e; font-size: 18px; font-weight: bold; line-height: 1; }
+    .deer-icon { width: 32px; height: 32px; pointer-events: none; }
+    .msg { margin-top: 10px; font-size: 0.95rem; min-height: 24px; font-weight: bold; text-align: center; }
+    .tool-bar { display: flex; gap: 8px; margin-top: 10px; }
+    .btn {
+      padding: 8px 14px; background: #4f772d; color: white;
+      border: none; border-radius: 6px; font-size: 0.9rem;
+      cursor: pointer; font-weight: bold;
+    }
+    .btn.active { background: #285215; outline: 2px solid #ffd8a8; }
+    .btn-reset { background: #88998a; }
+  </style>
+</head>
+<body>
+  <h1>🦌 鹿鹿領地 (8×8 挑戰)</h1>
+  <div class="rules">每行、每列、每個顏色剛好 1 隻鹿！<br>所有鹿鹿周圍 8 格（含斜對角）互不相碰。</div>
+  <div class="status-bar" id="counter">已放鹿鹿: 0 / 8</div>
+  <div id="board-container"><div id="board"></div></div>
+  <div class="tool-bar">
+    <button class="btn active" id="mode-deer" onclick="setMode(2)">放鹿模式 🦌</button>
+    <button class="btn" id="mode-cross" onclick="setMode(1)">標叉模式 ✕</button>
+    <button class="btn btn-reset" onclick="resetGame()">重開</button>
+  </div>
+  <div class="msg" id="msg"></div>
+  <script>
+    const N = 8;
+    const colorMap = [
+      [0, 0, 1, 1, 1, 2, 2, 2],
+      [0, 0, 1, 1, 1, 2, 2, 2],
+      [0, 3, 3, 1, 1, 4, 4, 2],
+      [3, 3, 3, 3, 4, 4, 4, 4],
+      [5, 3, 3, 6, 6, 6, 4, 4],
+      [5, 5, 6, 6, 6, 6, 7, 7],
+      [5, 5, 5, 6, 6, 7, 7, 7],
+      [5, 5, 5, 5, 7, 7, 7, 7]
+    ];
+    let boardState = Array.from({ length: N }, () => Array(N).fill(0));
+    let currentMode = 2;
+    const DEER_SVG = `<svg class="deer-icon" viewBox="0 0 64 64" fill="none"><path d="M20 22C18 14 11 12 9 13C8 17 12 21 16 25" stroke="#78471f" stroke-width="4" stroke-linecap="round"/><path d="M44 22C46 14 53 12 55 13C56 17 52 21 48 25" stroke="#78471f" stroke-width="4" stroke-linecap="round"/><ellipse cx="14" cy="30" rx="6" ry="3" transform="rotate(-30 14 30)" fill="#e59866"/><ellipse cx="50" cy="30" rx="6" ry="3" transform="rotate(30 50 30)" fill="#e59866"/><ellipse cx="32" cy="38" rx="18" ry="17" fill="#f39c12"/><circle cx="24" cy="37" r="3" fill="#2c3e50"/><circle cx="40" cy="37" r="3" fill="#2c3e50"/><circle cx="23" cy="36" r="1" fill="#ffffff"/><circle cx="39" cy="36" r="1" fill="#ffffff"/><ellipse cx="32" cy="44" rx="3.5" ry="2.5" fill="#78471f"/></svg>`;
+    const boardEl = document.getElementById("board");
+    const counterEl = document.getElementById("counter");
+    const msgEl = document.getElementById("msg");
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      let deerCount = 0;
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const cell = document.createElement("div");
+          cell.className = `cell zone-${colorMap[r][c]}`;
+          if (boardState[r][c] === 1) cell.innerHTML = `<span class="cross">✕</span>`;
+          else if (boardState[r][c] === 2) { cell.innerHTML = DEER_SVG; deerCount++; }
+          cell.addEventListener("click", () => onCellClick(r, c));
+          cell.addEventListener("contextmenu", (e) => { e.preventDefault(); toggleCross(r, c); });
+          boardEl.appendChild(cell);
+        }
+      }
+      counterEl.textContent = `已放鹿鹿: ${deerCount} / ${N}`;
+      validateGame(deerCount);
+    }
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById("mode-deer").className = mode === 2 ? "btn active" : "btn";
+      document.getElementById("mode-cross").className = mode === 1 ? "btn active" : "btn";
+    }
+    function onCellClick(r, c) {
+      msgEl.textContent = "";
+      if (currentMode === 2) boardState[r][c] = (boardState[r][c] === 2) ? 0 : 2;
+      else { toggleCross(r, c); return; }
+      renderBoard();
+    }
+    function toggleCross(r, c) {
+      boardState[r][c] = (boardState[r][c] === 1) ? 0 : 1;
+      renderBoard();
+    }
+    function validateGame(deerCount) {
+      if (deerCount !== N) return;
+      const deers = [];
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (boardState[r][c] === 2) deers.push({ r, c, zone: colorMap[r][c] });
+        }
+      }
+      const rows = new Set(), cols = new Set(), zones = new Set();
+      for (let i = 0; i < deers.length; i++) {
+        const { r, c, zone } = deers[i];
+        if (rows.has(r) || cols.has(c) || zones.has(zone)) {
+          msgEl.style.color = "#d9381e"; msgEl.textContent = "⚠️ 有鹿鹿在同一直排、橫排或同色塊內撞角囉！"; return;
+        }
+        rows.add(r); cols.add(c); zones.add(zone);
+        for (let j = i + 1; j < deers.length; j++) {
+          const other = deers[j];
+          if (Math.abs(r - other.r) <= 1 && Math.abs(c - other.c) <= 1) {
+            msgEl.style.color = "#d9381e"; msgEl.textContent = "⚠️ 鹿鹿靠太近，鹿角相互碰到了！"; return;
+          }
+        }
+      }
+      msgEl.style.color = "#1e7e34"; msgEl.textContent = "👑 厲害！8x8 困難領地完全破解！太神了！";
+    }
+    function resetGame() {
+      boardState = Array.from({ length: N }, () => Array(N).fill(0));
+      msgEl.textContent = ""; renderBoard();
+    }
+    window.onload = renderBoard;
+  </script>
+</body>
+</html>
