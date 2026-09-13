@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>鹿鹿領地拼圖 (5x5 輕巧版)</title>
+  <title>🦒阿鹿鹿領地拼圖 (5x5 輕巧版)</title>
   <style>
     * {
       box-sizing: border-box;
@@ -125,7 +125,7 @@
 </head>
 <body>
 
-  <h1>🦌 鹿鹿領地 (5×5 輕巧版)</h1>
+  <h1> 🦒阿鹿鹿領地 (5×5 輕巧版)</h1>
   <div class="rules">
     💡 提示：左上角<strong>暖橘色只有 1 格</strong>，是第一隻鹿鹿的突破點！<br>
     每行、每列、每個顏色剛好 1 隻鹿，周圍 8 格（含斜角）互不相碰。
@@ -137,7 +137,7 @@
   </div>
 
   <div class="tool-bar">
-    <button class="btn active" id="mode-deer" onclick="setMode(2)">放鹿模式 🦌</button>
+    <button class="btn active" id="mode-deer" onclick="setMode(2)">放鹿模式 🦒</button>
     <button class="btn" id="mode-cross" onclick="setMode(1)">標叉模式 ✕</button>
     <button class="btn btn-reset" onclick="resetGame()">重開</button>
   </div>
@@ -181,7 +181,7 @@
             img.className = "deer-img";
             img.alt = "鹿鹿";
             img.onerror = function() {
-              this.outerHTML = "🦌"; // 若圖檔讀取異常時退回 emoji 保底
+              this.outerHTML = "🦒"; // 若圖檔讀取異常時退回 emoji 保底
             };
             cell.appendChild(img);
             deerCount++;
